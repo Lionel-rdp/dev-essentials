@@ -11,6 +11,8 @@ services:
       - "3306:3306"
     networks:
       - app_network
+    volumes:
+      - sql_data:/var/opt/mssql
     restart: always
 
   redis:
@@ -62,5 +64,6 @@ networks:
     driver: bridge
 
 volumes:
+  sql_data:
   redis-data:
   redisinsight_data:
