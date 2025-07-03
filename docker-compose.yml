@@ -1,0 +1,67 @@
+services:
+  mssql:
+    image: mysql:8.0
+    container_name: mysql_server
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=database
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+    ports:
+      - "3306:3306"
+    networks:
+      - app_network
+    restart: always
+
+  redis:
+    image: redis:latest
+    container_name: redis_server
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app_network
+    restart: always
+  
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight
+    ports:
+      - "5540:5540" 
+    volumes:
+      - redisinsight_data:/data
+    depends_on:
+      - redis
+
+  
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # MinIO Console
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - ~/minio/data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+
+  memcache:
+    image: memcached:latest
+    container_name: memcache_server
+    ports:
+      - "11211:11211"
+    networks:
+      - app_network
+    restart: always
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  redisinsight_data:
