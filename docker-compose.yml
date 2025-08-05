@@ -58,12 +58,59 @@ services:
     networks:
       - app_network
     restart: always
+  solace:
+    container_name: pubSubStandardSingleNode
+    image: solace/solace-pubsub-standard:latest
+    volumes:
+      - "storage-group:/var/lib/solace"
+    shm_size: 1g
+    ulimits:
+      core: -1
+      nofile:
+        soft: 2448
+        hard: 1048576
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 1
+    ports:
+      - "8082:8080"
+      - "55555:55555"
+      - "8008:8008"
+      - "9100:9000"     # ✅ REST messaging for Postman
+    environment:
+      - username_admin_globalaccesslevel=admin
+      - username_admin_password=admin
+      - system_scaling_maxconnectioncount=100
+  # redis-master:
+  #   image: redis:7.2
+  #   container_name: redis-master
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_master:/data
+
+  # redis-slave:
+  #   image: redis:7.2
+  #   container_name: redis-slave
+  #   ports:
+  #     - "6479:6379"
+  #   volumes:
+  #     - redis_slave:/data
+  #   restart: always
+  #   command: redis-server --slaveof redis-master 6379
 
 networks:
   app_network:
+    driver: bridge
+  redis-cluster:
     driver: bridge
 
 volumes:
   sql_data:
   redis-data:
   redisinsight_data:
+  storage-group:
+  # redis_master:
+  # redis_slave:
